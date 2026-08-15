@@ -197,7 +197,7 @@ export default function Chat({
           if (item.role === "user") {
             return (
               <div key={item.id} className="anim-slide-up flex justify-end">
-                <p className="max-w-[86%] rounded-2xl rounded-br-sm border border-jet/35 bg-gradient-to-br from-jet/28 to-violet/18 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-chalk shadow-[0_10px_30px_-18px_rgba(59,130,246,0.9)]">
+                <p className="max-w-[86%] rounded-2xl rounded-br-sm border border-white/60 bg-white px-3.5 py-2.5 text-[12.5px] leading-relaxed text-black shadow-[0_10px_30px_-18px_rgba(255,255,255,0.6)]">
                   {item.content}
                 </p>
               </div>
@@ -370,7 +370,7 @@ export default function Chat({
           <button
             type="submit"
             disabled={isThinking || draft.trim().length === 0}
-            className="group grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-jet to-violet text-white shadow-[0_10px_26px_-12px_rgba(59,130,246,0.9)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:from-ink-600 disabled:to-ink-600 disabled:text-haze-dim disabled:shadow-none"
+            className="group grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-black shadow-[0_10px_26px_-12px_rgba(255,255,255,0.55)] transition-all hover:bg-white/85 disabled:cursor-not-allowed disabled:bg-ink-600 disabled:text-haze-dim disabled:shadow-none"
             aria-label="Send"
           >
             <SendIcon

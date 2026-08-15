@@ -260,8 +260,8 @@ export default function TripMap({
           state === "priced"
             ? TIER_HEX[tier]
             : state === "searching"
-              ? "#e2e8f5"
-              : "#3b82f6",
+              ? "#ffffff"
+              : "#7a7a7a",
       };
     });
   }, [plotted, legs, activeLeg, prices]);

@@ -58,7 +58,7 @@ export type CostTier = "cheap" | "mid" | "pricey";
 
 /**
  * Relative price banding across the legs of one trip: green for the cheapest
- * third, amber for the middle, coral for the top third.
+ * third, gray for the middle, white for the top third.
  */
 export function costTier(price: number, allPrices: number[]): CostTier {
   if (allPrices.length < 2) return "cheap";
@@ -73,14 +73,14 @@ export function costTier(price: number, allPrices: number[]): CostTier {
 
 export const TIER_HEX: Record<CostTier, string> = {
   cheap: "#10b981",
-  mid: "#f59e0b",
-  pricey: "#ef4444",
+  mid: "#8a8a8a",
+  pricey: "#f5f5f5",
 };
 
 export const TIER_TEXT: Record<CostTier, string> = {
   cheap: "text-mint",
-  mid: "text-amber",
-  pricey: "text-coral",
+  mid: "text-haze",
+  pricey: "text-chalk",
 };
 
 export const TIER_LABEL: Record<CostTier, string> = {

@@ -69,14 +69,14 @@ export default function Itinerary({
               <span
                 className="absolute left-0 top-1.5 grid h-3.5 w-3.5 place-items-center rounded-full border"
                 style={{
-                  borderColor: isReturnHome ? "#8b5cf6" : "#60a5fa",
-                  background: "#05080f",
-                  boxShadow: `0 0 10px ${isReturnHome ? "#8b5cf6" : "#60a5fa"}66`,
+                  borderColor: isReturnHome ? "#ffffff" : "#8a8a8a",
+                  background: "#000000",
+                  boxShadow: `0 0 10px ${isReturnHome ? "#ffffff" : "#8a8a8a"}66`,
                 }}
               >
                 <span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: isReturnHome ? "#8b5cf6" : "#60a5fa" }}
+                  style={{ background: isReturnHome ? "#ffffff" : "#8a8a8a" }}
                 />
               </span>
 

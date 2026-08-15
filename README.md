@@ -49,6 +49,61 @@ switch the same endpoint over to the live agent.
 - **DASHSCOPE_API_KEY**: Get from [Alibaba Cloud Model Studio](https://dashscope.console.aliyun.com/)
 - **ATLAS_CLIENT_ID** & **ATLAS_CLIENT_SECRET**: Get from [ATRIP](https://www.atriptech.com/)
 
+## Chat Bots
+
+BudgetWing also runs as Telegram and Discord bots: send a trip request in plain
+language and get the full plan back — itinerary text, a route-map image and a
+boarding-pass style itinerary card.
+
+```
+You:  I have $850, want to visit Bangkok, Hanoi and Bali, Nov 10-22, ±3 days
+Bot:  🧠 Planning your trip…
+      🔎 Pricing 12 legs on Atlas…
+      🗺️ [route map image]
+      🎫 [itinerary card image]
+      ✈️ Your optimized itinerary: …
+```
+
+### 1. Create a Telegram bot
+
+1. Open Telegram and message [@BotFather](https://t.me/BotFather).
+2. Send `/newbot`, choose a display name and a username ending in `bot`.
+3. Copy the **HTTP API token** BotFather returns.
+4. Put it in `.env.local` as `TELEGRAM_BOT_TOKEN`.
+
+The Telegram bot uses raw long-polling — no extra service or webhook host needed.
+Just DM your bot a trip request.
+
+### 2. Create a Discord bot
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+   and click **New Application**.
+2. Under **Bot**, click **Reset Token** and copy the token into `.env.local`
+   as `DISCORD_BOT_TOKEN`.
+3. Still under **Bot**, enable **Privileged Gateway Intents → MESSAGE CONTENT
+   INTENT** (required to read trip requests).
+4. Under **OAuth2 → URL Generator**, select the `bot` scope with `Send Messages`,
+   `Read Message History` permissions, open the generated URL and invite the bot
+   to your server.
+
+In servers the bot answers DMs, messages that @mention it, messages starting
+with `!trip`, and messages opening with a `$` budget (e.g. `$850 for Bangkok and
+Bali, Nov 10-22`).
+
+### 3. Run the bots
+
+```bash
+npm run bots
+```
+
+Whichever tokens are configured start; with none it prints setup instructions.
+
+### Example commands
+
+- `I have $850, want to visit Bangkok, Hanoi and Bali, Nov 10-22, ±3 days`
+- `!trip $1200 Singapore, Tokyo and Seoul in December, 2 passengers`
+- `$600 Kuala Lumpur and Bali, Jan 5-15, direct flights`
+
 ## Tech Stack
 
 - Next.js 16 + TypeScript + Tailwind CSS
@@ -65,6 +120,7 @@ Architecture notes for reviewers live in [docs/architecture.md](docs/architectur
 | `npm run dev`                  | Development server                        |
 | `npm run build`                | Production build                          |
 | `npm run lint`                 | ESLint                                    |
+| `npm run bots`                 | Telegram + Discord chat bots              |
 | `node scripts/sse-smoke.mjs`   | Streams a plan from the API and prints it  |
 
 ## Built With

@@ -28,9 +28,9 @@ function WingMark() {
       <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
         <defs>
           <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#93c5fd" />
-            <stop offset="55%" stopColor="#60a5fa" />
-            <stop offset="100%" stopColor="#a78bfa" />
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="55%" stopColor="#d9d9d9" />
+            <stop offset="100%" stopColor="#8a8a8a" />
           </linearGradient>
         </defs>
         <path
@@ -39,7 +39,7 @@ function WingMark() {
         />
         <path
           d="M11.5 14.8 21 4.5"
-          stroke="#05080f"
+          stroke="#000000"
           strokeWidth="1.1"
           strokeLinecap="round"
           opacity="0.55"

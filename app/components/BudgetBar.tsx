@@ -151,7 +151,7 @@ export default function BudgetBar({
 
                 <span
                   className="font-data text-right text-[11px]"
-                  style={{ color: searching ? "#64748b" : TIER_HEX[tier] }}
+                  style={{ color: searching ? "#6e6e6e" : TIER_HEX[tier] }}
                 >
                   {searching ? "···" : money(price, currency)}
                 </span>
