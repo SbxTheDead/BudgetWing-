@@ -1,9 +1,19 @@
 /**
- * DashScope (Alibaba Cloud Qwen) provider built on the OpenAI-compatible API.
+ * Alibaba Cloud Model Studio (Bailian) Qwen provider built on the
+ * OpenAI-compatible API.
  *
- * The `openai` SDK is pointed at DashScope's compatible-mode endpoint, which
- * supports chat completions, streaming and function calling with the same
- * request/response shapes as OpenAI.
+ * The `openai` SDK is pointed at Model Studio's compatible-mode endpoint,
+ * which supports chat completions, streaming and function calling with the
+ * same request/response shapes as OpenAI.
+ *
+ * Base URL resolution (in priority order):
+ *  1. `QWEN_BASE_URL` — full override.
+ *  2. `QWEN_WORKSPACE_ID` — workspace-dedicated domain
+ *     `https://{workspace}.{QWEN_REGION | ap-southeast-1}.maas.aliyuncs.com/compatible-mode/v1`.
+ *  3. Singapore international legacy shared domain (default).
+ *
+ * API keys are region-specific: the key's region must match the base URL's
+ * region or the API rejects the request with 401.
  */
 import OpenAI, { APIError, APIUserAbortError } from "openai";
 import type {
@@ -17,14 +27,32 @@ import type {
   ChatCompletionToolChoiceOption,
 } from "openai/resources/chat/completions";
 
-export const DASHSCOPE_BASE_URL =
-  "https://dashscope.aliyuncs.com/compatible-mode/v1";
+const DEFAULT_REGION = "ap-southeast-1";
 
-/** Primary model; `qwen-plus` is the faster/cheaper fallback. */
-export type QwenModel = "qwen-max" | "qwen-plus" | (string & {});
+/** Resolve the compatible-mode base URL from the environment (see module docs). */
+function resolveBaseUrl(): string {
+  const override = process.env.QWEN_BASE_URL?.trim();
+  if (override) return override;
 
-export const DEFAULT_MODEL: QwenModel = "qwen-max";
-export const FALLBACK_MODEL: QwenModel = "qwen-plus";
+  const workspaceId = process.env.QWEN_WORKSPACE_ID?.trim();
+  if (workspaceId) {
+    const region = process.env.QWEN_REGION?.trim() || DEFAULT_REGION;
+    return `https://${workspaceId}.${region}.maas.aliyuncs.com/compatible-mode/v1`;
+  }
+
+  return "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+}
+
+export const DASHSCOPE_BASE_URL = resolveBaseUrl();
+
+/** Primary model; `qwen3.6-flash` is the faster/cheaper fallback. */
+export type QwenModel =
+  | "qwen3.7-max"
+  | "qwen3.6-flash"
+  | (string & {});
+
+export const DEFAULT_MODEL: QwenModel = "qwen3.7-max";
+export const FALLBACK_MODEL: QwenModel = "qwen3.6-flash";
 
 const NON_STREAMING_TIMEOUT_MS = 60_000;
 const STREAMING_TIMEOUT_MS = 120_000;
@@ -45,7 +73,7 @@ export class QwenError extends Error {
   }
 }
 
-/** Thrown when `DASHSCOPE_API_KEY` is missing or rejected by DashScope. */
+/** Thrown when `DASHSCOPE_API_KEY` is missing or rejected by Model Studio. */
 export class QwenAuthError extends QwenError {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, { status: 401, cause: options?.cause });
@@ -72,14 +100,14 @@ export type QwenToolCall = ChatCompletionMessageToolCall;
 export type QwenTool = ChatCompletionFunctionTool;
 
 export interface ChatOptions {
-  /** Override the instance model for a single call (e.g. fall back to qwen-plus). */
+  /** Override the instance model for a single call (e.g. fall back to qwen3.6-flash). */
   model?: QwenModel;
   temperature?: number;
   topP?: number;
   maxTokens?: number;
   toolChoice?: ChatCompletionToolChoiceOption;
   parallelToolCalls?: boolean;
-  /** Force JSON output; DashScope supports `json_object` in compatible mode. */
+  /** Force JSON output; Model Studio supports `json_object` in compatible mode. */
   responseFormat?: "text" | "json_object";
   /** Caller-owned cancellation (e.g. request aborted by the browser). */
   signal?: AbortSignal | null;
@@ -420,7 +448,7 @@ interface RetryPlan {
 }
 
 /**
- * DashScope shares OpenAI's status semantics: 429 is throttling (backed off
+ * Model Studio shares OpenAI's status semantics: 429 is throttling (backed off
  * exponentially) and 5xx is transient (retried once).
  */
 function planRetry(error: unknown, attempt: number): RetryPlan {
@@ -447,16 +475,19 @@ function planRetry(error: unknown, attempt: number): RetryPlan {
 function normalizeError(error: unknown): Error {
   if (error instanceof APIError && error.status === 401) {
     return new QwenAuthError(
-      "DashScope rejected the credentials (401). Set a valid DASHSCOPE_API_KEY " +
-        "in .env.local — keys are created at https://bailian.console.aliyun.com/ " +
-        "and must have access to the Qwen models.",
+      "Model Studio (Bailian) rejected the credentials (401). Set a valid " +
+        "DASHSCOPE_API_KEY in .env.local. Keys are region-specific: create one " +
+        "in the Model Studio console (https://modelstudio.console.alibabacloud.com/ " +
+        "or https://bailian.console.aliyun.com) and make sure the key's region " +
+        "matches the base URL region (the app defaults to the Singapore " +
+        "international endpoint).",
       { cause: error },
     );
   }
 
   if (error instanceof APIError) {
     return new QwenError(
-      `DashScope request failed (${error.status}): ${error.message}`,
+      `Model Studio request failed (${error.status}): ${error.message}`,
       { status: error.status, cause: error },
     );
   }
@@ -487,7 +518,10 @@ export class QwenProvider {
     const apiKey = process.env.DASHSCOPE_API_KEY;
     if (!apiKey) {
       throw new QwenAuthError(
-        "DASHSCOPE_API_KEY is not set. Add it to .env.local before calling the Qwen provider.",
+        "DASHSCOPE_API_KEY is not set. Create a region-specific key in the " +
+          "Alibaba Cloud Model Studio console " +
+          "(https://modelstudio.console.alibabacloud.com/ or " +
+          "https://bailian.console.aliyun.com) and add it to .env.local.",
       );
     }
 
@@ -630,7 +664,7 @@ export class QwenProvider {
         : {}),
       ...(options.topP !== undefined ? { top_p: options.topP } : {}),
       ...(options.maxTokens !== undefined
-        ? { max_tokens: options.maxTokens }
+        ? { max_completion_tokens: options.maxTokens }
         : {}),
       ...(options.responseFormat
         ? { response_format: { type: options.responseFormat } }

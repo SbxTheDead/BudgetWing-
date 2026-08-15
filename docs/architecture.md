@@ -13,8 +13,12 @@ rather than staring at a spinner.
 
 ## Tech Stack
 
-- **LLM**: Qwen-Max via Alibaba Cloud Model Studio (DashScope), OpenAI-compatible
-  endpoint with function calling and streaming
+- **LLM**: qwen3.7-max via Alibaba Cloud Model Studio (Bailian),
+  OpenAI-compatible endpoint with function calling and streaming. API keys are
+  region-specific; the app defaults to the Singapore international endpoint
+  (`https://dashscope-intl.aliyuncs.com/compatible-mode/v1`) and can be
+  pointed at a workspace-dedicated domain via `QWEN_WORKSPACE_ID` or
+  overridden entirely with `QWEN_BASE_URL`.
 - **Flight Data**: Atlas ATRIP Sandbox API (140+ low-cost carriers)
 - **Framework**: Next.js 16 (App Router) with TypeScript strict mode
 - **UI**: Tailwind CSS v4, React Leaflet for the route map, SSE for live updates
@@ -26,7 +30,7 @@ rather than staring at a spinner.
 ```
 agent/
   core/       orchestration loop, prompts, shared agent types
-  providers/  Qwen/DashScope client (chat, streamChat, AGENT_TOOLS)
+  providers/  Qwen/Model Studio client (chat, streamChat, AGENT_TOOLS)
   tools/      atlas API wrapper, route optimizer, budget tracker, airports
 app/
   api/agent/  SSE endpoint + event bridge + scripted fallback planner

@@ -46,7 +46,10 @@ switch the same endpoint over to the live agent.
 
 ## API Keys Required
 
-- **DASHSCOPE_API_KEY**: Get from [Alibaba Cloud Model Studio](https://dashscope.console.aliyun.com/)
+- **DASHSCOPE_API_KEY**: Get from [Alibaba Cloud Model Studio (Bailian)](https://bailian.console.aliyun.com)
+  (international users: [modelstudio.console.alibabacloud.com](https://modelstudio.console.alibabacloud.com/)).
+  Keys are region-specific — the app defaults to the Singapore international
+  endpoint, so create the key in the Singapore (`ap-southeast-1`) region.
 - **ATLAS_CLIENT_ID** & **ATLAS_CLIENT_SECRET**: Get from [ATRIP](https://www.atriptech.com/)
 
 ## Chat Bots
@@ -107,7 +110,7 @@ Whichever tokens are configured start; with none it prints setup instructions.
 ## Tech Stack
 
 - Next.js 16 + TypeScript + Tailwind CSS
-- Qwen-Max (Alibaba Cloud DashScope)
+- qwen3.7-max (Alibaba Cloud Model Studio / Bailian)
 - Atlas ATRIP API
 - React Leaflet for maps
 
