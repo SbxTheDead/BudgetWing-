@@ -16,6 +16,20 @@ import { planTrip } from "./mock";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * CORS: the mobile app (and physical devices) call this endpoint from a
+ * different origin, so every response — preflight included — carries these.
+ */
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+export function OPTIONS(): Response {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
 const encoder = new TextEncoder();
 
 function frame(message: AgentMessage): Uint8Array {
@@ -223,7 +237,10 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as Partial<TripRequest>;
   } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    return Response.json(
+      { error: "Invalid JSON body" },
+      { status: 400, headers: CORS_HEADERS },
+    );
   }
 
   const req = normalize(body);
@@ -306,6 +323,7 @@ export async function POST(request: Request) {
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no",
+      ...CORS_HEADERS,
     },
   });
 }
