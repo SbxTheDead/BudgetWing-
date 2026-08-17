@@ -90,7 +90,7 @@ export class BudgetWingAgent {
     const cities = resolveTripCities(tripRequest.cities);
     const context = this.createContext(tripRequest, cities);
 
-    this.emit("thinking", `Reading the request: ${describeRequest(tripRequest, cities)}`);
+    this.emit("thinking", `Got it — planning ${describeRequest(tripRequest, cities)}.`);
 
     if (cities.length < 2) {
       context.state.status = "error";
@@ -115,9 +115,9 @@ export class BudgetWingAgent {
 
       this.emit(
         "complete",
-        `Locked ${route.legs.length} legs for ${formatCurrency(route.totalCost, tripRequest.currency)}` +
+        `All set! Your trip is locked in at ${formatCurrency(route.totalCost, tripRequest.currency)}` +
           (route.savings > 0
-            ? `, ${formatCurrency(route.savings, tripRequest.currency)} under the baseline.`
+            ? ` — ${formatCurrency(route.savings, tripRequest.currency)} saved.`
             : "."),
         route,
       );
@@ -171,13 +171,12 @@ export class BudgetWingAgent {
 
     this.emit(
       "thinking",
-      `${orderings} city ordering${orderings > 1 ? "s" : ""} to test. ` +
-        `That needs ${plan.length} priced legs once shared legs are deduplicated.`,
+      "Comparing route options…",
       { orderings, searches: plan.length },
     );
 
     context.state.status = "searching";
-    this.emit("searching", `Pricing ${plan.length} legs on Atlas…`, {
+    this.emit("searching", "Checking fares for your trip…", {
       searches: plan.length,
     });
 
@@ -185,7 +184,7 @@ export class BudgetWingAgent {
     const priced = results.filter((result) => result.offers.length > 0).length;
     this.emit(
       "result",
-      `${priced} of ${results.length} searches came back with fares.`,
+      "Fares are coming in — weighing up the best options…",
       { searched: results.length, priced },
     );
 
@@ -196,7 +195,7 @@ export class BudgetWingAgent {
 
     if (seed.legs.length === 0) return seed;
 
-    this.emit("comparing", seed.reasoning, seed);
+    this.emit("comparing", "A strong option is shaping up — double-checking it against the alternatives…", seed);
     this.emitLegQuotes(context, seed);
 
     const refined = await this.reason(context, tripRequest, seed);
@@ -298,7 +297,7 @@ export class BudgetWingAgent {
         if (event.name && !announced.has(event.index)) {
           announced.add(event.index);
           flush(true);
-          this.emit("thinking", `Calling ${event.name}…`, { tool: event.name });
+          this.emit("thinking", "Running a quick check…", { tool: event.name });
         }
       } else {
         flush(true);
@@ -360,7 +359,7 @@ export class BudgetWingAgent {
       return { error: "Search budget for this run is exhausted; decide with the data you have." };
     }
 
-    this.emit("searching", `Pricing ${origin}→${destination} on ${date}…`, {
+    this.emit("searching", "Looking for better fares on this leg…", {
       origin,
       destination,
       date,
@@ -409,7 +408,7 @@ export class BudgetWingAgent {
       });
     }
     if (missing.length > 0) {
-      this.emit("searching", `Pricing ${missing.length} legs before comparing…`, {
+      this.emit("searching", "Checking a few more fares before comparing…", {
         searches: missing.length,
       });
       await this.runSearches(context, missing.slice(0, MAX_SEARCHES_PER_TOOL_CALL));
@@ -431,7 +430,11 @@ export class BudgetWingAgent {
       this.syncBudget(context, route);
     }
 
-    this.emit("comparing", route.reasoning, route);
+    this.emit(
+      "comparing",
+      improved ? "Found something better — updating your plan…" : "Checked the alternatives — your current plan still wins.",
+      route,
+    );
     if (improved) this.emitLegQuotes(context, route);
 
     const budget = readNumber(args.budget) ?? tripRequest.budget;
@@ -470,9 +473,7 @@ export class BudgetWingAgent {
     const known = context.offers.get(routingIdentifier);
     this.emit(
       "thinking",
-      known
-        ? `Verifying ${known.result.origin}→${known.result.destination} on ${known.result.date} is still bookable…`
-        : `Verifying ${routingIdentifier}…`,
+      "Double-checking that these fares are still bookable…",
       { routingIdentifier },
     );
 
@@ -577,7 +578,7 @@ export class BudgetWingAgent {
     if (searches.length > 0) {
       this.emit(
         "searching",
-        `Sweeping ${searches.length} alternatives for ${origin}→${destination}…`,
+        `Checking flexible dates and nearby airports for ${origin}→${destination}…`,
         { origin, destination, searches: searches.length },
       );
       await this.runSearches(context, searches);
@@ -673,7 +674,7 @@ export class BudgetWingAgent {
       if (parsed?.legs !== undefined) {
         this.emit(
           "thinking",
-          "The model's itinerary did not map back to verified offers, so the optimizer's route stands.",
+          "Sticking with the plan I verified earlier — it still looks best.",
         );
       }
       return prose.length > 0 ? { ...best, reasoning: prose } : best;
@@ -699,7 +700,7 @@ export class BudgetWingAgent {
 
     context.state.bestRoute = route;
     this.syncBudget(context, route);
-    this.emit("result", `Final itinerary agreed: ${describeLegs(route.legs)}`, route);
+    this.emit("result", `Your itinerary is locked in: ${describeLegs(route.legs)}.`, route);
     this.emitLegQuotes(context, route);
     return route;
   }
@@ -780,13 +781,12 @@ export class BudgetWingAgent {
 
       const currency = leg.offer.currency;
       const detail = [
-        `${searched.length || offers.length} fares on ${leg.origin}→${leg.destination} for ${date}`,
-        `taking ${formatCurrency(leg.offer.totalPrice, currency)}`,
+        `${airportLabel(leg.origin)} → ${airportLabel(leg.destination)}: from ${formatCurrency(leg.offer.totalPrice, currency)}`,
         avgPrice !== undefined
-          ? `against a ${formatCurrency(avgPrice, currency)} average`
+          ? `typical fares around ${formatCurrency(avgPrice, currency)}`
           : null,
         leg.savings
-          ? `after shifting off ${leg.alternativeDate} for ${formatCurrency(leg.savings, currency)}`
+          ? `saving ${formatCurrency(leg.savings, currency)} on a nearby date`
           : null,
       ]
         .filter((part): part is string => part !== null)
@@ -921,14 +921,31 @@ function describeRequest(tripRequest: TripRequest, cities: string[]): string {
   const names = cities.map((city) => airportLabel(city)).join(" → ");
   return (
     `${formatCurrency(tripRequest.budget, tripRequest.currency)} for ` +
-    `${tripRequest.passengers} pax, ${names || "no recognised cities"}, ` +
-    `${tripRequest.startDate} to ${tripRequest.endDate} ±${tripRequest.flexDays}d`
+    `${tripRequest.passengers} traveller${tripRequest.passengers > 1 ? "s" : ""}, ` +
+    `${names || "no recognised cities"}, ` +
+    `${friendlyDate(tripRequest.startDate)} to ${friendlyDate(tripRequest.endDate)} ` +
+    `with ±${tripRequest.flexDays} days of flexibility`
   );
+}
+
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+/** `20261112` (or `2026-11-12`) → `Nov 12`, for narration only. */
+function friendlyDate(input: string): string {
+  const digits = input.replace(/\D/g, "");
+  if (digits.length < 8) return input;
+  const month = Number(digits.slice(4, 6));
+  const day = Number(digits.slice(6, 8));
+  if (month < 1 || month > 12 || day < 1 || day > 31) return input;
+  return `${MONTHS[month - 1]} ${day}`;
 }
 
 function describeLegs(legs: RouteLeg[]): string {
   return legs
-    .map((leg) => `${leg.origin}→${leg.destination} ${leg.date}`)
+    .map((leg) => `${airportLabel(leg.origin)} → ${airportLabel(leg.destination)}`)
     .join(", ");
 }
 

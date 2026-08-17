@@ -86,11 +86,12 @@ function FitBounds({ points }: { points: LatLng[] }) {
   useEffect(() => {
     if (points.length === 0) return;
     if (points.length === 1) {
-      map.flyTo(points[0], 5, { duration: 1.1 });
+      map.flyTo(points[0], 5, { duration: 1.2 });
       return;
     }
-    map.flyToBounds(L.latLngBounds(points).pad(0.28), {
-      duration: 1.3,
+    map.flyToBounds(L.latLngBounds(points).pad(0.26), {
+      duration: 1.5,
+      easeLinearity: 0.22,
       maxZoom: 7,
     });
     // Bounds only need recomputing when the plotted set changes.
@@ -283,7 +284,15 @@ export default function TripMap({
         className="h-full w-full"
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+          attribution='&copy; OpenStreetMap &copy; CARTO'
+          subdomains="abcd"
+          maxZoom={19}
+          detectRetina
+        />
+        {/* labels on their own layer stay crisp above the route arcs */}
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
           attribution='&copy; OpenStreetMap &copy; CARTO'
           subdomains="abcd"
           maxZoom={19}
@@ -366,11 +375,20 @@ export default function TripMap({
         })}
       </MapContainer>
 
+      {/* depth shading above tiles, below overlays */}
+      <div className="map-shade pointer-events-none absolute inset-0 z-[450]" />
+
       {/* ---- floating overlays ---- */}
       <div className="pointer-events-none absolute inset-0 z-[500]">
         <div className="glass-soft absolute left-4 top-4 flex items-center gap-2 rounded-full px-3 py-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-mint anim-pulse" />
-          <span className="text-[11px] font-medium text-white/80">
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              legs.some((l) => !l.price) && legs.length > 0
+                ? "bg-white anim-pulse"
+                : "bg-mint"
+            }`}
+          />
+          <span className="text-[11px] font-medium text-white/70">
             Route map
           </span>
         </div>
@@ -382,16 +400,16 @@ export default function TripMap({
           </span>
         </div>
 
-        {/* legend */}
-        <div className="glass-soft absolute bottom-4 left-4 flex flex-col gap-2 rounded-[16px] px-3.5 py-3">
+        {/* quiet legend — swatches only until hovered */}
+        <div className="glass-soft group absolute bottom-4 left-4 flex items-center gap-3.5 rounded-full px-3.5 py-2 opacity-75 transition-opacity duration-300 hover:opacity-100">
           {(["cheap", "mid", "pricey"] as CostTier[]).map((tier) => (
-            <span key={tier} className="flex items-center gap-2.5">
+            <span key={tier} className="flex items-center gap-1.5">
               <span
-                className="h-[2px] w-5 rounded-full"
+                className="h-[2px] w-4 rounded-full"
                 style={{ background: TIER_HEX[tier] }}
               />
-              <span className="text-[10px] text-white/45">
-                {TIER_LABEL[tier]}
+              <span className="text-[9.5px] uppercase tracking-wider text-white/0 transition-colors duration-300 group-hover:text-white/45">
+                {tier}
               </span>
             </span>
           ))}
@@ -408,7 +426,27 @@ export default function TripMap({
         {plotted.length === 0 && (
           <div className="absolute inset-0 grid place-items-center bg-base/40 backdrop-blur-[2px]">
             <div className="anim-fade-in text-center">
-              <p className="text-[14px] font-medium text-white/85">
+              <span className="relative mx-auto grid h-14 w-14 place-items-center rounded-full border border-dashed border-white/15">
+                <span
+                  className="absolute inset-0 rounded-full border border-white/10 anim-pulse"
+                  aria-hidden
+                />
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.55)"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M15.2 8.8l-2 4.4-4.4 2 2-4.4 4.4-2Z" />
+                </svg>
+              </span>
+              <p className="mt-4 text-[14px] font-medium text-white/85">
                 Awaiting flight plan
               </p>
               <p className="mx-auto mt-2 max-w-[260px] text-[12px] leading-relaxed text-white/45">

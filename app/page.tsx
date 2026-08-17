@@ -13,13 +13,30 @@ import { useAgent } from "./hooks/useAgent";
 const TripMap = dynamic(() => import("./components/TripMap"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-full w-full place-items-center">
-      <div className="flex flex-col items-center gap-3">
-        <span className="shimmer h-2 w-24 rounded-full" />
-        <span className="text-[11px] tracking-wide text-white/35">
-          Loading map…
-        </span>
-      </div>
+    <div className="relative grid h-full w-full place-items-center overflow-hidden">
+      {/* skeleton that mimics the finished map: drifting arcs + pins */}
+      <svg
+        viewBox="0 0 640 320"
+        className="w-full max-w-[480px] px-10"
+        aria-hidden
+      >
+        <path d="M80 232 Q 210 88 340 208" className="skeleton-arc" strokeWidth="1.6" />
+        <path d="M340 208 Q 440 128 560 176" className="skeleton-arc" strokeWidth="1.6" />
+        {[{ x: 80, y: 232 }, { x: 340, y: 208 }, { x: 560, y: 176 }].map((p) => (
+          <circle
+            key={`${p.x}-${p.y}`}
+            cx={p.x}
+            cy={p.y}
+            r="5"
+            fill="none"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1.2"
+          />
+        ))}
+      </svg>
+      <span className="absolute bottom-5 text-[11px] tracking-wide text-white/35">
+        Loading map…
+      </span>
     </div>
   ),
 });
@@ -53,10 +70,10 @@ export default function Home() {
   } = useAgent();
 
   return (
-    <div className="relative z-10 flex flex-1 flex-col lg:h-screen lg:overflow-hidden">
+    <div className="relative z-10 flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden">
       {/* ---------- masthead ---------- */}
       <header className="shrink-0">
-        <div className="mx-auto flex max-w-[1500px] items-center justify-between px-5 pb-1 pt-5 sm:px-7">
+        <div className="flex items-center justify-between px-6 pb-1 pt-5 sm:px-8 lg:px-10">
           <div className="flex items-center gap-3">
             <WingMark />
             <div className="leading-tight">
@@ -83,10 +100,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ---------- console ---------- */}
-      <main className="mx-auto grid min-h-0 w-full max-w-[1500px] flex-1 gap-5 p-5 sm:px-7 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:pb-7">
+      {/* ---------- console — full-bleed, columns fill the viewport ---------- */}
+      <main className="grid min-h-0 w-full flex-1 gap-5 p-5 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)] lg:overflow-hidden lg:px-8 lg:pb-7 lg:pt-5 xl:gap-7 xl:px-10">
         {/* chat — primary surface */}
-        <section className="h-[74vh] min-h-0 lg:h-full">
+        <section className="h-[76vh] min-h-0 lg:h-full">
           <Chat
             items={items}
             isThinking={isThinking}
@@ -101,8 +118,8 @@ export default function Home() {
         </section>
 
         {/* map + budget + itinerary */}
-        <section className="scroll-thin flex min-h-0 flex-col gap-5 lg:overflow-y-auto lg:pr-1">
-          <div className="glass relative h-[340px] shrink-0 overflow-hidden rounded-[26px] sm:h-[400px] lg:h-[46vh]">
+        <section className="scroll-thin flex min-h-0 flex-col gap-5 lg:overflow-y-auto lg:pr-1.5">
+          <div className="glass card-lift relative h-[340px] shrink-0 overflow-hidden rounded-[26px] sm:h-[400px] lg:h-[48vh] lg:min-h-[400px]">
             <TripMap
               cities={trip.order}
               legs={trip.legs}

@@ -203,8 +203,11 @@ export function quoteLeg(
 export function optimizeOrder(cities: string[]): {
   order: string[];
   alternativesConsidered: number;
+  /** Cost delta versus the next cheapest ordering, per passenger. */
+  nextBestSaving: number;
 } {
-  if (cities.length <= 2) return { order: cities, alternativesConsidered: 1 };
+  if (cities.length <= 2)
+    return { order: cities, alternativesConsidered: 1, nextBestSaving: 0 };
   const [home, ...rest] = cities;
   const permutations: string[][] = [];
 
@@ -231,10 +234,15 @@ export function optimizeOrder(cities: string[]): {
     return total;
   };
 
-  const best = permutations.reduce((a, b) => (cost(b) < cost(a) ? b : a));
+  const ranked = permutations
+    .map((order) => ({ order, cost: cost(order) }))
+    .sort((a, b) => a.cost - b.cost);
+  const bestCost = ranked[0].cost;
+  const nextBest = ranked.find((entry) => entry.cost > bestCost);
   return {
-    order: [home, ...best],
+    order: [home, ...ranked[0].order],
     alternativesConsidered: permutations.length,
+    nextBestSaving: nextBest ? Math.round(nextBest.cost - bestCost) : 0,
   };
 }
 
@@ -268,7 +276,7 @@ export interface TripPlan {
 
 /** Full mock plan: ordering, per-leg quotes, and the winning itinerary. */
 export function planTrip(req: TripRequest): TripPlan {
-  const { order, alternativesConsidered } = optimizeOrder(req.cities);
+  const { order, alternativesConsidered, nextBestSaving } = optimizeOrder(req.cities);
   const circuit = [...order, order[0]]; // return to the departure city
   const pairs = circuit
     .slice(0, -1)
@@ -307,18 +315,18 @@ export function planTrip(req: TripRequest): TripPlan {
   const baselineCost = quotes.reduce((sum, q) => sum + q.avgPrice, 0) * pax;
 
   const shifted = quotes.filter((q) => q.altSavings);
+  const routeFlow = order.map((c) => getCity(c)?.city ?? c).join(" → ");
   const reasoning = [
-    `Tested ${alternativesConsidered} city orderings and locked ${order
-      .map((c) => getCity(c)?.city ?? c)
-      .join(" → ")} as the cheapest circuit.`,
+    `Found your cheapest route: ${routeFlow} for $${Math.round(totalCost / pax)}${pax > 1 ? " per person" : ""}` +
+      (nextBestSaving > 0
+        ? ` — about $${nextBestSaving} less than the next best option.`
+        : "."),
     shifted.length
-      ? `Shifted ${shifted.length} departure${shifted.length > 1 ? "s" : ""} inside your ±${req.flexDays}-day window for ${shifted
-          .map((q) => `${q.origin}→${q.destination}`)
-          .join(", ")}.`
-      : `No date shift inside ±${req.flexDays} days beat the on-day fares.`,
+      ? `I shifted ${shifted.length === 1 ? "one flight" : `${shifted.length} flights`} by a few days to catch lower fares.`
+      : "Your dates already had the best fares, so nothing moved.",
     totalCost <= req.budget
-      ? `Lands at ${Math.round((totalCost / req.budget) * 100)}% of your budget with ${Math.round(req.budget - totalCost)} USD still free.`
-      : `Overshoots budget by ${Math.round(totalCost - req.budget)} USD — dropping the priciest leg is the next lever.`,
+      ? `That uses just ${Math.round((totalCost / req.budget) * 100)}% of your $${req.budget} budget, leaving $${Math.round(req.budget - totalCost)} for everything else.`
+      : `Even the cheapest plan runs $${Math.round(totalCost - req.budget)} over your $${req.budget} budget — dropping a city or travelling on different dates would help.`,
   ].join(" ");
 
   return {

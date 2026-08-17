@@ -16,7 +16,12 @@ import type {
   SearchResult,
   TripRequest,
 } from "@shared/types";
-import { airportLabel, resolveCity } from "./airports";
+import { getAirport, resolveCity } from "./airports";
+
+/** Plain city name for user-facing prose; falls back to the IATA code. */
+function cityName(iata: string): string {
+  return getAirport(iata)?.city ?? iata;
+}
 
 // ---------------------------------------------------------------------------
 // Tunables
@@ -589,8 +594,8 @@ export function findOptimalRoute(
 
   if (candidates.length === 0) {
     return emptyRoute(
-      `Searched ${optionsByPair.size} city pairs but no ordering had a priced flight for ` +
-        `every leg with ${minStay} days in each city.`,
+      "I couldn't price a complete trip — every route I checked is missing at least " +
+        "one flight. Trying different dates or fewer cities might help.",
       combinations,
     );
   }
@@ -658,6 +663,12 @@ export function findOptimalRoute(
   };
 }
 
+/**
+ * Friendly, user-facing summary of the winning itinerary: route + price, how
+ * much it beats the next option by, any date shifts, directness and how much
+ * of the budget it uses. Exact numbers stay in the route's data fields; the
+ * prose rounds to whole dollars.
+ */
 function explainRoute(input: {
   best: RouteCandidate;
   legs: RouteLeg[];
@@ -668,52 +679,50 @@ function explainRoute(input: {
   tripRequest: TripRequest;
   withinBudget: boolean;
 }): string {
-  const { best, legs, candidates, combinations, totalCost, savings, tripRequest } =
-    input;
+  const { best, legs, candidates, totalCost, savings, tripRequest } = input;
+  const money = (value: number) =>
+    `${tripRequest.currency === "USD" ? "$" : `${tripRequest.currency} `}${Math.round(value)}`;
+  const perPerson = tripRequest.passengers > 1 ? " per person" : "";
   const sentences: string[] = [];
 
+  const routeFlow = best.order.map((city) => cityName(city)).join(" → ");
   const runnerUp = candidates.find(
     (candidate) => candidate !== best && candidate.totalCost > best.totalCost,
   );
   sentences.push(
-    `Tested ${candidates.length} viable city ordering${candidates.length > 1 ? "s" : ""} ` +
-      `across ${combinations} dated combinations; ${best.order
-        .map((city) => airportLabel(city))
-        .join(" → ")} → ${airportLabel(best.order[0])} won at $${best.totalCost} per person` +
+    `Found your cheapest route: ${routeFlow} for ${money(best.totalCost)}${perPerson}` +
       (runnerUp
-        ? `, $${Math.round((runnerUp.totalCost - best.totalCost) * 100) / 100} under the next best ordering.`
+        ? ` — ${money(runnerUp.totalCost - best.totalCost)} less than the next best option.`
         : "."),
   );
 
   const shifted = legs.filter((leg) => leg.alternativeDate);
   sentences.push(
     shifted.length > 0
-      ? `Moved ${shifted.length} departure${shifted.length > 1 ? "s" : ""} inside the ` +
-        `±${tripRequest.flexDays}-day window (${shifted
-          .map((leg) => `${leg.origin}→${leg.destination} to ${leg.date}`)
-          .join(", ")}).`
-      : `No date shift inside ±${tripRequest.flexDays} days beat the nominal departures.`,
+      ? `I shifted ${shifted.length === 1 ? "one flight" : `${shifted.length} flights`} by a few days to catch lower fares.`
+      : "Your dates already had the best fares, so nothing moved.",
   );
 
   const directLegs = best.penalties.filter((note) => note.includes("direct")).length;
-  if (directLegs === legs.length) {
-    sentences.push(`All ${legs.length} legs fly direct.`);
+  if (directLegs === legs.length && legs.length > 1) {
+    sentences.push(`Every flight is direct.`);
   } else if (directLegs > 0) {
     sentences.push(
-      `${directLegs} of ${legs.length} legs fly direct; the connections were kept only where they came in cheaper than the comfort penalty.`,
+      `I kept ${directLegs} of ${legs.length} legs direct — connections only where they clearly save you money.`,
     );
   }
 
-  if (savings > 0) {
+  if (savings > 0 && runnerUp) {
     sentences.push(
-      `That is $${savings} below flying your original city order on the nominal dates.`,
+      `That's ${money(savings)} cheaper than flying your original plan.`,
     );
   }
 
+  const pct = Math.round((totalCost / tripRequest.budget) * 100);
   sentences.push(
     input.withinBudget
-      ? `Lands at ${Math.round((totalCost / tripRequest.budget) * 100)}% of the $${tripRequest.budget} budget, leaving $${Math.round(tripRequest.budget - totalCost)} free.`
-      : `Cheapest itinerary still overshoots the $${tripRequest.budget} budget by $${Math.round(totalCost - tripRequest.budget)} — dropping a city or widening the dates is the next lever.`,
+      ? `That uses just ${pct}% of your ${money(tripRequest.budget)} budget, leaving ${money(tripRequest.budget - totalCost)} for everything else.`
+      : `Even the cheapest plan runs ${money(totalCost - tripRequest.budget)} over your ${money(tripRequest.budget)} budget — dropping a city or travelling on different dates would help.`,
   );
 
   return sentences.join(" ");

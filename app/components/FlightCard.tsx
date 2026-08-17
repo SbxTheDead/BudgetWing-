@@ -33,7 +33,7 @@ export default function FlightCard({
 
   return (
     <article
-      className={`glass-soft group relative overflow-hidden rounded-[18px] px-4 py-3.5 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-white/20 ${
+      className={`glass-soft group relative overflow-hidden rounded-[18px] px-4 py-3.5 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_14px_36px_rgba(0,0,0,0.42)] ${
         cheapest ? "border-mint/30" : ""
       }`}
     >

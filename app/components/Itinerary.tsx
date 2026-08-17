@@ -113,7 +113,7 @@ export default function Itinerary({
                     <PlaneIcon size={11} className="rotate-90" />
                   </span>
 
-                  <div className="glass-soft rounded-[14px] px-3.5 py-2.5">
+                  <div className="card-lift glass-soft rounded-[14px] px-3.5 py-2.5">
                     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                       <span className="flex items-center gap-2.5">
                         <span className="surface grid h-6 w-6 place-items-center rounded-[8px] text-[9px] font-semibold tracking-wide text-white">

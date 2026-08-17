@@ -10,6 +10,7 @@ import {
 import type { ChatItem } from "@/app/hooks/useAgent";
 import { money, stampDate } from "@/app/lib/format";
 import FlightCard from "./FlightCard";
+import RouteMap from "./RouteMap";
 import { ArrowIcon, BoltIcon, RefreshIcon, SendIcon } from "./icons";
 
 interface ChatProps {
@@ -273,10 +274,14 @@ export default function Chat({
                       </span>
                     )}
                     <span>{item.route.legs.length} flights</span>
-                    <span className="text-white/35">
-                      full breakdown in the itinerary panel
-                    </span>
                   </p>
+                )}
+
+                {/* the route lives inside the conversation now */}
+                {item.route && (
+                  <div className="mt-3.5">
+                    <RouteMap route={item.route} currency={currency} />
+                  </div>
                 )}
               </div>
             );
