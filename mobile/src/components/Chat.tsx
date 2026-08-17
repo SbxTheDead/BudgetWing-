@@ -35,7 +35,14 @@ export default function Chat({ messages, isThinking, statusLine, onSend }: ChatP
       <div className="chat__scroll" ref={scrollRef}>
         {messages.length === 0 && (
           <div className="chat__empty">
-            <span className="chat__empty-glyph">✈</span>
+            <span className="chat__empty-glyph">
+              <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                <path
+                  d="M2 13l7 1 4 7 2-1-1-6 6-4c1.1-.7 1.4-2 .7-2.9-.6-.8-1.8-1-2.7-.4l-6 4-5-3-2 1 4 5z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
             <h2>Where to?</h2>
             <p>
               Tell me a budget and a few cities — I'll fly the globe looking
@@ -92,7 +99,7 @@ export default function Chat({ messages, isThinking, statusLine, onSend }: ChatP
               <div key={m.id} className="msg msg--agent msg--summary">
                 <div className="msg__bubble msg__bubble--mint">{m.content}</div>
                 <div className="msg__summary-tag">
-                  ROUTE LOCKED — check the PLAN tab for the full breakdown
+                  Route locked — see the Plan tab for the full breakdown
                 </div>
               </div>
             );
@@ -105,9 +112,11 @@ export default function Chat({ messages, isThinking, statusLine, onSend }: ChatP
         })}
 
         {isThinking && (
-          <div className="msg msg--trace msg--thinking">
-            <span className="dot-wave"><i /><i /><i /></span>
-            {statusLine ?? "planning…"}
+          <div className="msg msg--agent msg--thinking">
+            <div className="msg__bubble">
+              <span className="dot-wave"><i /><i /><i /></span>
+              {statusLine ?? "Planning…"}
+            </div>
           </div>
         )}
       </div>
@@ -137,8 +146,9 @@ export default function Chat({ messages, isThinking, statusLine, onSend }: ChatP
           enterKeyHint="send"
         />
         <button type="submit" className="chat__send" disabled={isThinking || !draft.trim()}>
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path d="M3 11.5L21 3l-8.5 18-2.2-7.3L3 11.5z" fill="currentColor" />
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 19V5" />
+            <path d="M5 12l7-7 7 7" />
           </svg>
         </button>
       </form>

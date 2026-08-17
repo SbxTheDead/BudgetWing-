@@ -35,17 +35,15 @@ export default function Itinerary({
   const underBudget = route.totalCost <= budget;
 
   return (
-    <section className="panel grain overflow-hidden rounded-2xl">
-      <header className="rail-sheen flex items-center justify-between gap-3 border-b border-white/8 px-4 py-3">
-        <h2 className="font-display text-[11px] font-semibold uppercase tracking-[0.24em] text-haze">
-          Locked itinerary
-        </h2>
-        <span className="font-data text-[10px] uppercase tracking-[0.14em] text-haze-dim">
+    <section className="glass overflow-hidden rounded-[24px]">
+      <header className="flex items-center justify-between gap-3 border-b border-white/8 px-5 py-3.5">
+        <h2 className="text-[13px] font-medium text-white/85">Itinerary</h2>
+        <span className="num text-[11px] text-white/35">
           {legs.length} flights · {route.alternativesConsidered} routes tested
         </span>
       </header>
 
-      <ol className="px-4 py-4">
+      <ol className="px-5 py-5">
         {stops.map((code, i) => {
           const city = getCity(code);
           const leg = legs[i];
@@ -62,35 +60,39 @@ export default function Itinerary({
           return (
             <li
               key={`${code}-${i}`}
-              className="anim-slide-up relative pl-7"
+              className="anim-rise relative pl-7"
               style={{ animationDelay: `${i * 90}ms` }}
             >
               {/* node */}
               <span
-                className="absolute left-0 top-1.5 grid h-3.5 w-3.5 place-items-center rounded-full border"
+                className="absolute left-0 top-1.5 grid h-3 w-3 place-items-center rounded-full border bg-base"
                 style={{
-                  borderColor: isReturnHome ? "#ffffff" : "#8a8a8a",
-                  background: "#000000",
-                  boxShadow: `0 0 10px ${isReturnHome ? "#ffffff" : "#8a8a8a"}66`,
+                  borderColor: isReturnHome
+                    ? "rgba(255,255,255,0.9)"
+                    : "rgba(255,255,255,0.35)",
                 }}
               >
                 <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: isReturnHome ? "#ffffff" : "#8a8a8a" }}
+                  className="h-1 w-1 rounded-full"
+                  style={{
+                    background: isReturnHome
+                      ? "#ffffff"
+                      : "rgba(255,255,255,0.5)",
+                  }}
                 />
               </span>
 
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <p className="flex items-baseline gap-2">
-                  <span className="font-display text-[15px] font-semibold tracking-[0.06em] text-chalk">
+                  <span className="text-[16px] font-semibold tracking-tight text-white">
                     {code}
                   </span>
-                  <span className="text-[12px] text-haze">
+                  <span className="text-[12px] text-white/55">
                     {city?.city ?? code}
                     {city ? `, ${city.country}` : ""}
                   </span>
                 </p>
-                <p className="font-data text-[10px] uppercase tracking-[0.12em] text-haze-dim">
+                <p className="num text-[10.5px] text-white/35">
                   {arrivalLeg ? shortDate(arrivalLeg.date) : shortDate(legs[0].date)}
                   {nights > 0 ? ` · ${nights} night${nights > 1 ? "s" : ""}` : ""}
                   {isReturnHome ? " · trip ends" : ""}
@@ -99,30 +101,30 @@ export default function Itinerary({
 
               {/* connector + flight detail */}
               {leg && (
-                <div className="relative mb-4 mt-2">
+                <div className="relative mb-5 mt-2.5">
                   <span
                     aria-hidden
                     className="spine absolute -left-[22px] top-0 h-full w-px"
                   />
                   <span
                     aria-hidden
-                    className="absolute -left-[27px] top-1/2 -translate-y-1/2 rounded bg-ink-900 py-1 text-jet-bright"
+                    className="absolute -left-[27px] top-1/2 -translate-y-1/2 rounded-full bg-base py-1 text-white/70"
                   >
                     <PlaneIcon size={11} className="rotate-90" />
                   </span>
 
-                  <div className="rounded-lg border border-white/8 bg-ink-850/60 px-3 py-2">
+                  <div className="glass-soft rounded-[14px] px-3.5 py-2.5">
                     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                      <span className="flex items-center gap-2">
-                        <span className="grid h-6 w-6 place-items-center rounded border border-white/10 bg-white/6 font-display text-[9px] font-bold tracking-wider text-chalk">
+                      <span className="flex items-center gap-2.5">
+                        <span className="surface grid h-6 w-6 place-items-center rounded-[8px] text-[9px] font-semibold tracking-wide text-white">
                           {segment?.carrier}
                         </span>
-                        <span className="font-data text-[11px] tracking-[0.06em] text-chalk">
+                        <span className="num text-[12px] text-white">
                           {clockTime(segment?.depTime ?? "")}
-                          <span className="px-1 text-haze-dim">→</span>
+                          <span className="px-1.5 text-white/30">→</span>
                           {clockTime(lastSegment?.arrTime ?? "")}
                         </span>
-                        <span className="font-data text-[10px] text-haze-dim">
+                        <span className="num text-[10.5px] text-white/35">
                           {duration(
                             leg.offer.fromSegments.reduce(
                               (sum, s) => sum + s.duration,
@@ -133,14 +135,14 @@ export default function Itinerary({
                       </span>
 
                       <span
-                        className="font-data text-[13px]"
+                        className="num text-[13.5px] font-medium"
                         style={{ color: TIER_HEX[tier] }}
                       >
                         {money(leg.offer.totalPrice * passengers, currency)}
                       </span>
                     </div>
 
-                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-data text-[9px] uppercase tracking-[0.12em] text-haze-dim">
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/35">
                       <span>
                         {carrierName(segment?.carrier ?? "")} ·{" "}
                         {segment?.flightNumber}
@@ -173,34 +175,34 @@ export default function Itinerary({
       </ol>
 
       {/* reasoning */}
-      <p className="mx-4 mb-4 border-l-2 border-violet/50 bg-violet/6 px-3 py-2 text-[11px] leading-relaxed text-haze">
+      <p className="mx-5 mb-5 border-l-2 border-white/15 bg-white/4 px-3.5 py-2.5 text-[11.5px] leading-relaxed text-white/55">
         {route.reasoning}
       </p>
 
-      {/* total — boarding-pass stub */}
-      <div className="ticket-edge border-t border-dashed border-white/12 bg-ink-950/60 px-4 py-4">
+      {/* total */}
+      <div className="border-t border-white/8 bg-white/3 px-5 py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <span className="font-data block text-[9px] uppercase tracking-[0.22em] text-haze-dim">
-              total trip cost{passengers > 1 ? ` · ${passengers} pax` : ""}
+            <span className="block text-[10px] uppercase tracking-wider text-white/35">
+              Total trip cost{passengers > 1 ? ` · ${passengers} pax` : ""}
             </span>
-            <span className="font-display block pt-1 text-[28px] font-bold leading-none text-gradient">
+            <span className="num block pt-1 text-[30px] font-semibold leading-none tracking-tight text-white">
               {money(route.totalCost, currency)}
             </span>
           </div>
 
           <div className="flex flex-col items-end gap-2">
             {route.savings > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-mint/30 bg-mint/10 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-mint/25 bg-mint/10 px-3 py-1">
                 <BoltIcon size={11} className="text-mint" />
-                <span className="font-data text-[10px] tracking-[0.06em] text-mint">
-                  saved {money(route.savings, currency)} vs market
+                <span className="num text-[11px] text-mint">
+                  Saved {money(route.savings, currency)} vs market
                 </span>
               </span>
             )}
             <span
-              className={`font-data text-[10px] uppercase tracking-[0.14em] ${
-                underBudget ? "text-haze-dim" : "text-coral"
+              className={`num text-[10.5px] ${
+                underBudget ? "text-white/35" : "text-coral"
               }`}
             >
               {underBudget
@@ -214,13 +216,11 @@ export default function Itinerary({
           type="button"
           disabled
           title="Booking is out of scope for this demo"
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-jet/25 bg-gradient-to-r from-jet/25 via-violet/20 to-jet/25 px-4 py-3 font-display text-[11px] font-semibold uppercase tracking-[0.24em] text-chalk/60 disabled:cursor-not-allowed"
+          className="btn btn-primary mt-5 w-full py-3 text-[13px]"
         >
-          <PlaneIcon size={13} />
+          <PlaneIcon size={14} />
           Book this trip
-          <span className="font-data text-[9px] tracking-[0.14em] text-haze-dim">
-            (demo)
-          </span>
+          <span className="text-[10px] opacity-50">(demo)</span>
         </button>
       </div>
     </section>

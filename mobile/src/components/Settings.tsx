@@ -43,7 +43,7 @@ export default function Settings() {
   return (
     <div className="settings">
       <header className="settings__head">
-        <span className="settings__kicker">GROUND CONTROL</span>
+        <span className="settings__kicker">Settings</span>
         <h2>Connection</h2>
         <p>
           BudgetWing is a thin client — the planner agent runs on the Next.js
@@ -51,42 +51,45 @@ export default function Settings() {
         </p>
       </header>
 
-      <label className="settings__field">
-        <span>API BASE URL</span>
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={DEFAULT_API_BASE}
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          inputMode="url"
-        />
-      </label>
+      <div className="settings__group">
+        <label className="settings__field">
+          <span>API base URL</span>
+          <input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={DEFAULT_API_BASE}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="url"
+          />
+        </label>
 
-      <div className="settings__actions">
-        <button className="btn btn--solid" onClick={save}>
-          {saved ? "Saved ✓" : "Save"}
-        </button>
-        <button
-          className="btn"
-          onClick={testConnection}
-          disabled={test.phase === "testing"}
-        >
-          {test.phase === "testing" ? "Pinging…" : "Test connection"}
-        </button>
+        <div className="settings__actions">
+          <button className="btn btn--solid" onClick={save}>
+            {saved ? "Saved" : "Save"}
+          </button>
+          <button
+            className="btn"
+            onClick={testConnection}
+            disabled={test.phase === "testing"}
+          >
+            {test.phase === "testing" ? "Testing…" : "Test connection"}
+          </button>
+        </div>
+
+        {test.phase === "ok" && (
+          <div className="settings__status settings__status--ok">
+            Connected — {test.detail}
+          </div>
+        )}
+        {test.phase === "fail" && (
+          <div className="settings__status settings__status--fail">
+            Couldn't connect — {test.detail}. Check that the backend is running
+            and the URL is correct.
+          </div>
+        )}
       </div>
-
-      {test.phase === "ok" && (
-        <div className="settings__status settings__status--ok">
-          SIGNAL ACQUIRED — {test.detail}
-        </div>
-      )}
-      {test.phase === "fail" && (
-        <div className="settings__status settings__status--fail">
-          NO SIGNAL — {test.detail}. Is the backend running? Wrong IP?
-        </div>
-      )}
 
       <div className="settings__hints">
         <h3>Which URL do I use?</h3>

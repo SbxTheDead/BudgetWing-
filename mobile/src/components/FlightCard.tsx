@@ -64,7 +64,12 @@ export default function FlightCard({ offer, avgPrice, compact }: FlightCardProps
           <span className="flight-card__duration">{duration(totalMin)}</span>
           <span className="flight-card__line" aria-hidden="true">
             <i />
-            <i className="flight-card__wing" />
+            <svg className="flight-card__plane" viewBox="0 0 24 24" width="15" height="15">
+              <path
+                d="M2 13l7 1 4 7 2-1-1-6 6-4c1.1-.7 1.4-2 .7-2.9-.6-.8-1.8-1-2.7-.4l-6 4-5-3-2 1 4 5z"
+                fill="currentColor"
+              />
+            </svg>
             <i />
           </span>
         </div>

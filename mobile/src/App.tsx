@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Globe3D, { type GlobeArc } from "./components/Globe3D";
 import Chat from "./components/Chat";
 import BudgetBar from "./components/BudgetBar";
@@ -10,21 +10,45 @@ import { money } from "./lib/format";
 
 type Tab = "globe" | "chat" | "plan" | "settings";
 
-const TAB_ICONS: Record<Tab, string> = {
-  globe:
-    "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.7 15.7 0 0 0-1.2-5.3A8 8 0 0 1 19.9 11zM12 4c.9 1.2 1.9 3.4 2.4 7H9.6c.5-3.6 1.5-5.8 2.4-7zM8.7 5.7A15.7 15.7 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.3zM4.1 13h3.4c.1 2 .6 3.8 1.2 5.3A8 8 0 0 1 4.1 13zM12 20c-.9-1.2-1.9-3.4-2.4-7h4.8c-.5 3.6-1.5 5.8-2.4 7zm3.3-1.7c.6-1.5 1.1-3.3 1.2-5.3h3.4a8 8 0 0 1-4.6 5.3z",
-  chat: "M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4V5a1 1 0 0 1 1-1z",
-  plan:
-    "M7 3v4M17 3v4M5 9h14M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm3 8l2.2 2.2L15.5 11",
-  settings:
-    "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.9 6.7l-1.8.3a7 7 0 0 1-.6 1.5l1 1.6-1.8 1.8-1.6-1a7 7 0 0 1-1.5.6l-.3 1.8h-2.6l-.3-1.8a7 7 0 0 1-1.5-.6l-1.6 1-1.8-1.8 1-1.6a7 7 0 0 1-.6-1.5l-1.8-.3v-2.6l1.8-.3c.1-.5.3-1 .6-1.5l-1-1.6 1.8-1.8 1.6 1c.5-.3 1-.5 1.5-.6l.3-1.8h2.6l.3 1.8c.5.1 1 .3 1.5.6l1.6-1 1.8 1.8-1 1.6c.3.5.5 1 .6 1.5l1.8.3z",
-};
+const TAB_ORDER: Tab[] = ["globe", "chat", "plan", "settings"];
 
 const TAB_LABELS: Record<Tab, string> = {
   globe: "Globe",
   chat: "Chat",
   plan: "Plan",
   settings: "Settings",
+};
+
+/* Quiet Lucide-style line icons. */
+const TAB_ICONS: Record<Tab, ReactNode> = {
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </>
+  ),
+  chat: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+  plan: (
+    <>
+      <circle cx="6" cy="19" r="3" />
+      <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+      <circle cx="18" cy="5" r="3" />
+    </>
+  ),
+  settings: (
+    <>
+      <line x1="21" x2="14" y1="4" y2="4" />
+      <line x1="10" x2="3" y1="4" y2="4" />
+      <line x1="21" x2="12" y1="12" y2="12" />
+      <line x1="8" x2="3" y1="12" y2="12" />
+      <line x1="21" x2="16" y1="20" y2="20" />
+      <line x1="12" x2="3" y1="20" y2="20" />
+      <line x1="14" x2="14" y1="2" y2="6" />
+      <line x1="8" x2="8" y1="10" y2="14" />
+      <line x1="16" x2="16" y1="18" y2="22" />
+    </>
+  ),
 };
 
 export default function App() {
@@ -56,31 +80,29 @@ export default function App() {
     }));
   }, [trip.route, trip.legs]);
 
-  const planBadge = trip.route ? "●" : null;
+  const tabIndex = TAB_ORDER.indexOf(tab);
 
   return (
     <div className="shell">
       <header className="topbar">
         <div className="topbar__brand">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
             <path
               d="M2 13l7 1 4 7 2-1-1-6 6-4c1.1-.7 1.4-2 .7-2.9-.6-.8-1.8-1-2.7-.4l-6 4-5-3-2 1 4 5z"
               fill="currentColor"
             />
           </svg>
-          <span>
-            BUDGET<b>WING</b>
-          </span>
+          <span>BudgetWing</span>
         </div>
         <div className="topbar__status">
           {agent.isThinking ? (
             <span className="topbar__live">
-              <i /> SCANNING
+              <i /> Searching
             </span>
           ) : trip.route ? (
-            <span className="topbar__locked">ROUTE LOCKED</span>
+            <span className="topbar__locked">Route locked</span>
           ) : (
-            <span className="topbar__idle">STANDBY</span>
+            <span className="topbar__idle">Standby</span>
           )}
         </div>
       </header>
@@ -95,20 +117,21 @@ export default function App() {
                 <div className="globe-hud__route">
                   {trip.order.map((c, i) => (
                     <span key={`${c}-${i}`}>
-                      {cityLabel(c).toUpperCase()}
+                      {cityLabel(c)}
                       {i < trip.order.length - 1 && <em>→</em>}
                     </span>
                   ))}
                 </div>
               ) : (
                 <div className="globe-hud__empty">
-                  SPIN THE GLOBE · PICK A ROUTE IN CHAT
+                  Spin the globe · pick a route in Chat
                 </div>
               )}
 
               {trip.activeLeg && (
                 <div className="globe-hud__active">
-                  PRICING {trip.activeLeg.origin} ✈ {trip.activeLeg.destination}
+                  <i />
+                  Pricing {trip.activeLeg.origin} → {trip.activeLeg.destination}
                 </div>
               )}
 
@@ -118,10 +141,12 @@ export default function App() {
 
               {trip.route && (
                 <div className="globe-hud__totals">
-                  <span>TOTAL {money(trip.route.totalCost, trip.currency)}</span>
+                  <span>
+                    Total <strong>{money(trip.route.totalCost, trip.currency)}</strong>
+                  </span>
                   {trip.route.savings > 0 && (
                     <span className="globe-hud__save">
-                      SAVED {money(trip.route.savings, trip.currency)}
+                      Saved {money(trip.route.savings, trip.currency)}
                     </span>
                   )}
                 </div>
@@ -153,7 +178,13 @@ export default function App() {
               </>
             ) : (
               <div className="plan-screen__empty">
-                <span>◌</span>
+                <span className="plan-screen__glyph">
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="6" cy="19" r="3" />
+                    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+                    <circle cx="18" cy="5" r="3" />
+                  </svg>
+                </span>
                 <p>No flight plan yet.</p>
                 <button className="btn btn--solid" onClick={() => setTab("chat")}>
                   Start planning
@@ -167,25 +198,23 @@ export default function App() {
       </main>
 
       <nav className="tabbar" aria-label="Primary">
-        {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
+        <span
+          className="tabbar__thumb"
+          aria-hidden="true"
+          style={{ transform: `translateX(${tabIndex * 100}%)` }}
+        />
+        {TAB_ORDER.map((t) => (
           <button
             key={t}
             className={`tabbar__item${tab === t ? " tabbar__item--active" : ""}`}
             onClick={() => setTab(t)}
             aria-current={tab === t ? "page" : undefined}
           >
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-              <path
-                d={TAB_ICONS[t]}
-                fill={t === "plan" && planBadge ? "none" : "currentColor"}
-                stroke="currentColor"
-                strokeWidth={t === "plan" ? 1.6 : 0}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {TAB_ICONS[t]}
             </svg>
             <span>{TAB_LABELS[t]}</span>
-            {t === "plan" && planBadge && <i className="tabbar__ping" />}
+            {t === "plan" && trip.route && <i className="tabbar__ping" />}
           </button>
         ))}
       </nav>

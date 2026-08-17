@@ -22,7 +22,7 @@ export default function BudgetBar({ budget, spent, currency = "USD" }: BudgetBar
   return (
     <div className={`budget budget--${tone}`} role="meter" aria-valuenow={Math.round(spent)} aria-valuemin={0} aria-valuemax={budget}>
       <div className="budget__row">
-        <span className="budget__label">BUDGET</span>
+        <span className="budget__label">Budget</span>
         <span className="budget__figures">
           <strong>{money(spent, currency)}</strong>
           <em>/ {money(budget, currency)}</em>

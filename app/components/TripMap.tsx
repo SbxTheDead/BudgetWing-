@@ -312,7 +312,7 @@ export default function TripMap({
           >
             {arc.price ? (
               <Tooltip direction="top" opacity={1} sticky>
-                <span className="font-data text-[10px] tracking-wide">
+                <span className="num text-[10.5px] tracking-wide">
                   {arc.origin} → {arc.destination} · {money(arc.price, currency)}
                   {arc.date ? ` · ${stampDate(arc.date)}` : ""} ·{" "}
                   {TIER_LABEL[arc.tier]}
@@ -357,7 +357,7 @@ export default function TripMap({
               )}
             >
               <Tooltip direction="bottom" offset={[0, 10]} opacity={1}>
-                <span className="font-data text-[10px] tracking-wide">
+                <span className="num text-[10.5px] tracking-wide">
                   {city.city}, {city.country}
                 </span>
               </Tooltip>
@@ -366,40 +366,31 @@ export default function TripMap({
         })}
       </MapContainer>
 
-      {/* ---- HUD overlays ---- */}
+      {/* ---- floating overlays ---- */}
       <div className="pointer-events-none absolute inset-0 z-[500]">
-        {/* corner brackets */}
-        <span className="absolute left-3 top-3 h-5 w-5 border-l border-t border-jet/50" />
-        <span className="absolute right-3 top-3 h-5 w-5 border-r border-t border-jet/50" />
-        <span className="absolute bottom-3 left-3 h-5 w-5 border-b border-l border-jet/50" />
-        <span className="absolute bottom-3 right-3 h-5 w-5 border-b border-r border-jet/50" />
-
-        <div className="absolute left-6 top-5 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-mint anim-blink" />
-          <span className="font-display text-[10px] font-semibold uppercase tracking-[0.28em] text-haze">
-            live route map
+        <div className="glass-soft absolute left-4 top-4 flex items-center gap-2 rounded-full px-3 py-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-mint anim-pulse" />
+          <span className="text-[11px] font-medium text-white/80">
+            Route map
           </span>
         </div>
 
-        <div className="absolute right-6 top-5 text-right">
-          <span className="font-data block text-[10px] uppercase tracking-[0.16em] text-haze-dim">
+        <div className="glass-soft absolute right-4 top-4 rounded-full px-3 py-1.5 text-right">
+          <span className="num text-[10.5px] text-white/55">
             {plotted.length} airports · {legs.filter((l) => l.price).length}/
             {arcs.length} legs priced
           </span>
         </div>
 
         {/* legend */}
-        <div className="absolute bottom-6 left-6 flex flex-col gap-1.5 rounded-lg border border-white/8 bg-ink-950/70 px-2.5 py-2 backdrop-blur-sm">
+        <div className="glass-soft absolute bottom-4 left-4 flex flex-col gap-2 rounded-[16px] px-3.5 py-3">
           {(["cheap", "mid", "pricey"] as CostTier[]).map((tier) => (
-            <span key={tier} className="flex items-center gap-2">
+            <span key={tier} className="flex items-center gap-2.5">
               <span
                 className="h-[2px] w-5 rounded-full"
-                style={{
-                  background: TIER_HEX[tier],
-                  boxShadow: `0 0 6px ${TIER_HEX[tier]}`,
-                }}
+                style={{ background: TIER_HEX[tier] }}
               />
-              <span className="font-data text-[9px] uppercase tracking-[0.14em] text-haze-dim">
+              <span className="text-[10px] text-white/45">
                 {TIER_LABEL[tier]}
               </span>
             </span>
@@ -407,20 +398,20 @@ export default function TripMap({
         </div>
 
         {statusLine && (
-          <div className="anim-slide-up absolute bottom-6 left-1/2 max-w-[78%] -translate-x-1/2 rounded-lg border border-jet/30 bg-ink-950/85 px-3 py-2 backdrop-blur-sm">
-            <span className="font-data text-[10px] leading-relaxed tracking-[0.04em] text-chalk/90">
+          <div className="anim-rise glass-soft absolute bottom-4 left-1/2 max-w-[76%] -translate-x-1/2 rounded-[14px] px-4 py-2">
+            <span className="text-[11px] leading-relaxed text-white/80">
               {statusLine}
             </span>
           </div>
         )}
 
         {plotted.length === 0 && (
-          <div className="absolute inset-0 grid place-items-center bg-ink-950/45">
+          <div className="absolute inset-0 grid place-items-center bg-base/40 backdrop-blur-[2px]">
             <div className="anim-fade-in text-center">
-              <p className="font-display text-[12px] font-semibold uppercase tracking-[0.3em] text-haze">
-                awaiting flight plan
+              <p className="text-[14px] font-medium text-white/85">
+                Awaiting flight plan
               </p>
-              <p className="mx-auto mt-2 max-w-[240px] font-data text-[10px] leading-relaxed tracking-[0.06em] text-haze-dim">
+              <p className="mx-auto mt-2 max-w-[260px] text-[12px] leading-relaxed text-white/45">
                 Name your budget and cities in the chat — arcs are drawn as
                 fares come back.
               </p>

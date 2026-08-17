@@ -20,7 +20,7 @@ export default function Itinerary({ route, budget, currency = "USD", baselineCos
     <section className="itin">
       <header className="itin__head">
         <div>
-          <span className="itin__kicker">FLIGHT PLAN</span>
+          <span className="itin__kicker">Flight plan</span>
           <h2 className="itin__title">
             {route.legs.length} leg{route.legs.length > 1 ? "s" : ""} ·{" "}
             {route.legs.map((l) => cityLabel(l.origin)).join(" → ")} →{" "}
@@ -29,7 +29,7 @@ export default function Itinerary({ route, budget, currency = "USD", baselineCos
         </div>
         {savings > 0 && (
           <span className="itin__savings-badge">
-            SAVE {money(savings, currency)}
+            Saved {money(savings, currency)}
           </span>
         )}
       </header>
@@ -78,7 +78,7 @@ export default function Itinerary({ route, budget, currency = "USD", baselineCos
 
                 {leg.alternativeDate && typeof leg.savings === "number" && leg.savings > 0 && (
                   <div className="itin__alt">
-                    fly {shortDate(leg.alternativeDate)} → save {money(leg.savings, currency)}
+                    Fly {shortDate(leg.alternativeDate)} and save {money(leg.savings, currency)}
                   </div>
                 )}
               </div>

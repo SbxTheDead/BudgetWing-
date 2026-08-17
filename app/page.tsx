@@ -4,48 +4,37 @@ import dynamic from "next/dynamic";
 import BudgetBar from "./components/BudgetBar";
 import Chat from "./components/Chat";
 import Itinerary from "./components/Itinerary";
-import { LayersIcon } from "./components/icons";
 import { useAgent } from "./hooks/useAgent";
 
 /**
  * react-leaflet touches `window` at module scope, so the map has to stay off
- * the server render entirely.
+ * the server render entirely. Show a calm skeleton while it hydrates.
  */
 const TripMap = dynamic(() => import("./components/TripMap"), {
   ssr: false,
   loading: () => (
-    <div className="hud-grid grid h-full w-full place-items-center bg-ink-950">
-      <span className="font-data text-[10px] uppercase tracking-[0.24em] text-haze-dim anim-blink">
-        booting map tiles…
-      </span>
+    <div className="grid h-full w-full place-items-center">
+      <div className="flex flex-col items-center gap-3">
+        <span className="shimmer h-2 w-24 rounded-full" />
+        <span className="text-[11px] tracking-wide text-white/35">
+          Loading map…
+        </span>
+      </div>
     </div>
   ),
 });
 
 function WingMark() {
   return (
-    <span className="relative grid h-10 w-10 place-items-center rounded-xl border border-jet/30 bg-gradient-to-br from-jet/25 via-violet/20 to-transparent">
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-        <defs>
-          <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="55%" stopColor="#d9d9d9" />
-            <stop offset="100%" stopColor="#8a8a8a" />
-          </linearGradient>
-        </defs>
+    <span className="glass-soft grid h-9 w-9 place-items-center rounded-[12px]">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
         <path
-          d="M2.5 15.5 21 4.5l-5 9.5-4.5.8L9 20l-2-4.8-4.5.3Z"
-          fill="url(#wing)"
-        />
-        <path
-          d="M11.5 14.8 21 4.5"
-          stroke="#000000"
-          strokeWidth="1.1"
-          strokeLinecap="round"
-          opacity="0.55"
+          d="M3 16.5 21 5l-4.5 9.5-4.8.9L9 20.5l-1.9-4.6L3 16.5Z"
+          stroke="rgba(255,255,255,0.92)"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
         />
       </svg>
-      <span className="absolute -inset-px rounded-xl border border-white/5" />
     </span>
   );
 }
@@ -64,51 +53,39 @@ export default function Home() {
   } = useAgent();
 
   return (
-    <div className="flex flex-1 flex-col lg:h-screen lg:overflow-hidden">
+    <div className="relative z-10 flex flex-1 flex-col lg:h-screen lg:overflow-hidden">
       {/* ---------- masthead ---------- */}
-      <header className="hud-grid relative shrink-0 border-b border-white/8">
-        <div className="rail-sheen absolute inset-x-0 top-0 h-px" />
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <header className="shrink-0">
+        <div className="mx-auto flex max-w-[1500px] items-center justify-between px-5 pb-1 pt-5 sm:px-7">
           <div className="flex items-center gap-3">
             <WingMark />
-            <div>
-              <h1 className="font-display text-[19px] font-bold leading-none tracking-[0.02em]">
-                <span className="text-chalk">Budget</span>
-                <span className="text-gradient">Wing</span>
+            <div className="leading-tight">
+              <h1 className="text-[17px] font-semibold tracking-tight text-white">
+                BudgetWing
               </h1>
-              <p className="font-data pt-1 text-[9px] uppercase tracking-[0.2em] text-haze-dim">
-                agentic budget flight optimizer
+              <p className="text-[11px] text-white/40">
+                Agentic budget flight optimizer
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-ink-850/70 px-2.5 py-1">
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  isThinking ? "bg-jet-bright anim-blink" : "bg-mint"
-                }`}
-              />
-              <span className="font-data text-[9px] uppercase tracking-[0.16em] text-haze">
-                {isThinking ? "searching fares" : "agent ready"}
-              </span>
-            </span>
-            <span className="hidden items-center gap-1.5 rounded-full border border-white/8 bg-ink-850/70 px-2.5 py-1 sm:inline-flex">
-              <LayersIcon size={11} className="text-violet" />
-              <span className="font-data text-[9px] uppercase tracking-[0.16em] text-haze">
-                atlas api · sandbox
-              </span>
-            </span>
-            <span className="hidden font-data text-[9px] uppercase tracking-[0.16em] text-haze-dim md:inline">
-              model studio · qoder
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                isThinking ? "bg-white anim-pulse" : "bg-mint"
+              }`}
+              aria-hidden
+            />
+            <span className="text-[11px] text-white/40">
+              {isThinking ? "Searching fares" : "Ready"}
             </span>
           </div>
         </div>
       </header>
 
       {/* ---------- console ---------- */}
-      <main className="grid min-h-0 flex-1 gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        {/* chat — 60% */}
+      <main className="mx-auto grid min-h-0 w-full max-w-[1500px] flex-1 gap-5 p-5 sm:px-7 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:pb-7">
+        {/* chat — primary surface */}
         <section className="h-[74vh] min-h-0 lg:h-full">
           <Chat
             items={items}
@@ -123,9 +100,9 @@ export default function Home() {
           />
         </section>
 
-        {/* map + budget + itinerary — 40% */}
-        <section className="scroll-thin flex min-h-0 flex-col gap-3 sm:gap-4 lg:overflow-y-auto lg:pr-1">
-          <div className="panel relative h-[340px] shrink-0 overflow-hidden rounded-2xl sm:h-[400px] lg:h-[46vh]">
+        {/* map + budget + itinerary */}
+        <section className="scroll-thin flex min-h-0 flex-col gap-5 lg:overflow-y-auto lg:pr-1">
+          <div className="glass relative h-[340px] shrink-0 overflow-hidden rounded-[26px] sm:h-[400px] lg:h-[46vh]">
             <TripMap
               cities={trip.order}
               legs={trip.legs}
@@ -146,7 +123,7 @@ export default function Home() {
           />
 
           {trip.route && (
-            <div className="anim-slide-up">
+            <div className="anim-rise">
               <Itinerary
                 route={trip.route}
                 budget={trip.budget}

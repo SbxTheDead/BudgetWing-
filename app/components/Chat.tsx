@@ -10,13 +10,7 @@ import {
 import type { ChatItem } from "@/app/hooks/useAgent";
 import { money, stampDate } from "@/app/lib/format";
 import FlightCard from "./FlightCard";
-import {
-  ArrowIcon,
-  BoltIcon,
-  CompassIcon,
-  RefreshIcon,
-  SendIcon,
-} from "./icons";
+import { ArrowIcon, BoltIcon, RefreshIcon, SendIcon } from "./icons";
 
 interface ChatProps {
   items: ChatItem[];
@@ -36,45 +30,26 @@ const PRESETS = [
   "Budget $600, Kuala Lumpur, Phuket, Singapore, in November, flexible 3 days",
 ];
 
-/** Log-style row used for the agent's reasoning and search trace. */
-function TraceRow({
-  item,
-  live,
-}: {
-  item: ChatItem;
-  live: boolean;
-}) {
+/** Quiet row for the agent's reasoning and search trace. */
+function TraceRow({ item, live }: { item: ChatItem; live: boolean }) {
   const isSearch = item.kind === "search";
   return (
-    <div
-      className={`anim-slide-up flex gap-2.5 border-l-2 py-1 pl-3 ${
-        live
-          ? "border-jet-bright"
-          : isSearch
-            ? "border-violet/45"
-            : "border-white/10"
-      }`}
-    >
+    <div className="anim-rise flex items-start gap-2.5 pl-1">
       <span
-        className={`mt-[3px] font-data text-[9px] leading-none tracking-[0.1em] ${
-          isSearch ? "text-violet" : "text-haze-dim"
+        className={`mt-[7px] h-1 w-1 shrink-0 rounded-full ${
+          live ? "bg-white anim-pulse" : "bg-white/25"
         }`}
-      >
-        {isSearch ? "SRCH" : "THNK"}
-      </span>
+        aria-hidden
+      />
       <p
-        className={`font-data flex-1 text-[10.5px] leading-relaxed tracking-[0.02em] ${
-          live ? "text-chalk" : "text-haze"
+        className={`flex-1 text-[12px] leading-relaxed ${
+          live ? "text-white/70" : "text-white/40"
         }`}
       >
+        <span className="mr-1.5 text-[10px] uppercase tracking-wider text-white/30">
+          {isSearch ? "Search" : "Thinking"}
+        </span>
         {item.content}
-        {live && (
-          <span className="dot-wave ml-2 inline-flex items-center gap-1 align-middle">
-            <span />
-            <span />
-            <span />
-          </span>
-        )}
       </p>
     </div>
   );
@@ -122,32 +97,25 @@ export default function Chat({
     .find((i) => i.kind === "thinking" || i.kind === "search")?.id;
 
   return (
-    <div className="panel grain flex h-full min-h-0 flex-col rounded-2xl">
-      <header className="flex items-center justify-between gap-3 border-b border-white/8 px-4 py-3">
-        <h2 className="flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.24em] text-haze">
-          <CompassIcon size={13} className="text-violet" />
-          Planning console
-        </h2>
+    <div className="glass flex h-full min-h-0 flex-col rounded-[24px]">
+      <header className="flex items-center justify-between gap-3 border-b border-white/8 px-5 py-3.5">
+        <h2 className="text-[13px] font-medium text-white/85">Planning</h2>
         <div className="flex items-center gap-3">
           {isThinking ? (
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-jet-bright anim-blink" />
-              <span className="font-data text-[9px] uppercase tracking-[0.18em] text-jet-bright">
-                agent working
-              </span>
+              <span className="h-1.5 w-1.5 rounded-full bg-white anim-pulse" />
+              <span className="text-[11px] text-white/60">Working…</span>
             </span>
           ) : (
-            <span className="font-data text-[9px] uppercase tracking-[0.18em] text-haze-dim">
-              idle
-            </span>
+            <span className="text-[11px] text-white/35">Idle</span>
           )}
           {items.length > 0 && (
             <button
               type="button"
               onClick={onReset}
-              className="font-data text-[9px] uppercase tracking-[0.16em] text-haze-dim transition-colors hover:text-chalk"
+              className="link-quiet text-[11px]"
             >
-              clear
+              Clear
             </button>
           )}
         </div>
@@ -155,36 +123,36 @@ export default function Chat({
 
       <div
         ref={scrollRef}
-        className="scroll-thin flex-1 space-y-3 overflow-y-auto px-4 py-4"
+        className="scroll-thin flex-1 space-y-4 overflow-y-auto px-5 py-5"
       >
         {items.length === 0 && (
-          <div className="anim-fade-in py-6">
-            <p className="font-display text-[13px] font-semibold uppercase tracking-[0.2em] text-chalk">
-              Tell me the money, not the route.
+          <div className="anim-fade-in py-8">
+            <p className="text-[22px] font-semibold leading-tight tracking-tight text-white">
+              Tell me the money,
+              <br />
+              not the route.
             </p>
-            <p className="mt-2 max-w-md text-[12.5px] leading-relaxed text-haze">
-              I permute city orders, slide departures inside your flex window and
-              compare fare families across 140+ low-cost carriers — then hand
-              back the itinerary that fits your envelope.
+            <p className="mt-3 max-w-md text-[13.5px] leading-relaxed text-white/55">
+              I permute city orders, slide departures inside your flex window
+              and compare fare families across 140+ low-cost carriers — then
+              hand back the itinerary that fits your envelope.
             </p>
 
-            <div className="mt-5 space-y-2">
-              <span className="font-data text-[9px] uppercase tracking-[0.2em] text-haze-dim">
-                try one of these
-              </span>
+            <div className="mt-8 space-y-2.5">
+              <span className="eyebrow">Try one of these</span>
               {PRESETS.map((preset, i) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => onSend(preset)}
-                  className="anim-slide-up group flex w-full items-center gap-2.5 rounded-xl border border-white/8 bg-ink-850/60 px-3 py-2.5 text-left transition-all hover:border-jet/40 hover:bg-ink-700/50"
+                  className="anim-rise glass-soft group flex w-full items-center gap-3 rounded-[16px] px-4 py-3 text-left transition-colors hover:bg-white/10"
                   style={{ animationDelay: `${120 + i * 80}ms` }}
                 >
                   <ArrowIcon
-                    size={13}
-                    className="shrink-0 text-jet-bright transition-transform group-hover:translate-x-0.5"
+                    size={14}
+                    className="shrink-0 text-white/40 transition-transform group-hover:translate-x-0.5 group-hover:text-white"
                   />
-                  <span className="text-[11.5px] leading-snug text-haze group-hover:text-chalk">
+                  <span className="text-[12.5px] leading-snug text-white/65 group-hover:text-white">
                     {preset}
                   </span>
                 </button>
@@ -196,8 +164,8 @@ export default function Chat({
         {items.map((item) => {
           if (item.role === "user") {
             return (
-              <div key={item.id} className="anim-slide-up flex justify-end">
-                <p className="max-w-[86%] rounded-2xl rounded-br-sm border border-white/60 bg-white px-3.5 py-2.5 text-[12.5px] leading-relaxed text-black shadow-[0_10px_30px_-18px_rgba(255,255,255,0.6)]">
+              <div key={item.id} className="anim-rise flex justify-end">
+                <p className="max-w-[84%] rounded-[18px] rounded-br-[6px] bg-white px-4 py-2.5 text-[13px] leading-relaxed text-neutral-900 shadow-[0_6px_20px_rgba(0,0,0,0.35)]">
                   {item.content}
                 </p>
               </div>
@@ -218,18 +186,18 @@ export default function Chat({
             return (
               <div
                 key={item.id}
-                className="anim-slide-up rounded-xl border border-coral/35 bg-coral/8 px-3.5 py-3"
+                className="anim-rise rounded-[16px] border border-coral/25 bg-coral/10 px-4 py-3"
               >
-                <p className="text-[12px] leading-relaxed text-coral/95">
+                <p className="text-[12.5px] leading-relaxed text-coral/95">
                   {item.content}
                 </p>
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-coral/35 px-2.5 py-1 font-data text-[10px] uppercase tracking-[0.14em] text-coral transition-colors hover:bg-coral/15"
+                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-[10px] border border-coral/30 px-3 py-1.5 text-[11px] text-coral transition-colors hover:bg-coral/15"
                 >
                   <RefreshIcon size={11} />
-                  retry
+                  Retry
                 </button>
               </div>
             );
@@ -238,14 +206,14 @@ export default function Chat({
           if (item.kind === "offers") {
             const offers = item.offers ?? [];
             return (
-              <div key={item.id} className="anim-slide-up space-y-2">
+              <div key={item.id} className="anim-rise space-y-2.5">
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="font-display text-[11px] font-semibold uppercase tracking-[0.16em] text-chalk">
+                  <p className="text-[13px] font-medium text-white">
                     {item.leg?.origin}
-                    <span className="px-1.5 text-haze-dim">→</span>
+                    <span className="px-1.5 text-white/35">→</span>
                     {item.leg?.destination}
                   </p>
-                  <span className="font-data text-[9px] uppercase tracking-[0.14em] text-haze-dim">
+                  <span className="num text-[11px] text-white/35">
                     {item.leg?.date ? stampDate(item.leg.date) : ""}
                     {item.leg?.avgPrice
                       ? ` · avg ${money(item.leg.avgPrice, currency)}`
@@ -257,7 +225,7 @@ export default function Chat({
                   {offers.slice(0, 3).map((offer, i) => (
                     <div
                       key={offer.routingIdentifier}
-                      className="anim-slide-up"
+                      className="anim-rise"
                       style={{ animationDelay: `${i * 90}ms` }}
                     >
                       <FlightCard
@@ -271,9 +239,9 @@ export default function Chat({
                 </div>
 
                 {item.leg?.altSavings ? (
-                  <p className="flex items-center gap-1.5 pl-0.5 font-data text-[10px] tracking-[0.04em] text-mint">
-                    <BoltIcon size={11} />
-                    date shift to {stampDate(item.leg.altDate ?? "")} saves{" "}
+                  <p className="flex items-center gap-1.5 pl-0.5 text-[11.5px] text-mint">
+                    <BoltIcon size={12} />
+                    Date shift to {stampDate(item.leg.altDate ?? "")} saves{" "}
                     {money(item.leg.altSavings, currency)}
                   </p>
                 ) : null}
@@ -285,18 +253,18 @@ export default function Chat({
             return (
               <div
                 key={item.id}
-                className="anim-slide-up rounded-2xl rounded-bl-sm border border-mint/30 bg-gradient-to-br from-mint/12 to-jet/8 px-3.5 py-3"
+                className="anim-rise rounded-[18px] rounded-bl-[6px] border border-mint/25 bg-mint/10 px-4 py-3.5"
               >
-                <p className="flex items-center gap-2 font-display text-[10px] font-semibold uppercase tracking-[0.22em] text-mint">
+                <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-mint">
                   <BoltIcon size={12} />
-                  plan locked
+                  Plan locked
                 </p>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-chalk/90">
+                <p className="mt-2 text-[13px] leading-relaxed text-white/85">
                   {item.content}
                 </p>
                 {item.route && (
-                  <p className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-data text-[10px] uppercase tracking-[0.12em] text-haze">
-                    <span className="text-chalk">
+                  <p className="num mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/55">
+                    <span className="text-white">
                       {money(item.route.totalCost, currency)} total
                     </span>
                     {item.route.savings > 0 && (
@@ -305,7 +273,7 @@ export default function Chat({
                       </span>
                     )}
                     <span>{item.route.legs.length} flights</span>
-                    <span className="text-haze-dim">
+                    <span className="text-white/35">
                       full breakdown in the itinerary panel
                     </span>
                   </p>
@@ -315,26 +283,23 @@ export default function Chat({
           }
 
           return (
-            <p
-              key={item.id}
-              className="anim-slide-up max-w-[92%] rounded-2xl rounded-bl-sm border border-white/8 bg-ink-850/70 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-haze"
-            >
-              {item.content}
-            </p>
+            <div key={item.id} className="anim-rise flex justify-start">
+              <p className="glass-soft max-w-[84%] rounded-[18px] rounded-bl-[6px] px-4 py-2.5 text-[13px] leading-relaxed text-white/75">
+                {item.content}
+              </p>
+            </div>
           );
         })}
 
-        {/* live thinking pill — shown when the stream is quiet between frames */}
+        {/* live thinking pill — calm shimmer while the stream is quiet */}
         {isThinking && (
-          <div className="anim-fade-in flex items-center gap-2.5 rounded-xl border border-jet/30 bg-jet/6 px-3 py-2.5 anim-pulse-glow">
-            <span className="dot-wave inline-flex items-center gap-1">
-              <span />
-              <span />
-              <span />
-            </span>
-            <span className="font-data text-[10px] uppercase tracking-[0.14em] text-jet-bright">
-              {statusLine ? "reasoning" : "connecting to planner"}
-            </span>
+          <div className="anim-fade-in">
+            <div className="thinking-pill inline-flex items-center gap-2.5 rounded-[14px] border border-white/10 bg-white/5 px-4 py-2.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-white/70 anim-pulse" />
+              <span className="text-[11.5px] text-white/60">
+                {statusLine ? "Reasoning…" : "Connecting to planner…"}
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -344,11 +309,11 @@ export default function Chat({
           event.preventDefault();
           submit();
         }}
-        className="border-t border-white/8 px-3 py-3"
+        className="border-t border-white/8 px-4 py-4"
       >
         <div
-          className={`flex items-end gap-2 rounded-xl border bg-ink-950/70 p-2 transition-colors ${
-            isThinking ? "border-jet/40" : "border-white/10 focus-within:border-jet/50"
+          className={`glass-soft flex items-end gap-2 rounded-[18px] p-2 transition-colors ${
+            isThinking ? "border-white/20" : "focus-within:border-white/25"
           }`}
         >
           <textarea
@@ -365,32 +330,29 @@ export default function Chat({
             disabled={isThinking}
             placeholder="I have $850, want to visit Bangkok, Hanoi and Bali, Nov 10-22, ±3 days"
             aria-label="Describe your trip"
-            className="no-resize scroll-thin max-h-[150px] min-h-[38px] flex-1 bg-transparent px-2 py-2 text-[12.5px] leading-relaxed text-chalk outline-none placeholder:text-haze-dim/70 disabled:opacity-50"
+            className="no-resize scroll-thin max-h-[150px] min-h-[38px] flex-1 bg-transparent px-2.5 py-2 text-[13px] leading-relaxed text-white outline-none placeholder:text-white/30 disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isThinking || draft.trim().length === 0}
-            className="group grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-black shadow-[0_10px_26px_-12px_rgba(255,255,255,0.55)] transition-all hover:bg-white/85 disabled:cursor-not-allowed disabled:bg-ink-600 disabled:text-haze-dim disabled:shadow-none"
+            className="btn btn-primary h-10 w-10 shrink-0 !rounded-[14px]"
             aria-label="Send"
           >
-            <SendIcon
-              size={16}
-              className="transition-transform group-enabled:group-hover:translate-x-0.5"
-            />
+            <SendIcon size={16} />
           </button>
         </div>
 
-        <div className="mt-2 flex items-center justify-between px-1">
-          <span className="font-data text-[9px] uppercase tracking-[0.14em] text-haze-dim">
-            budget · cities · dates · flex — enter to send
+        <div className="mt-2.5 flex items-center justify-between px-1.5">
+          <span className="text-[10.5px] text-white/30">
+            Budget · cities · dates · flex — Enter to send
           </span>
           {error && !isThinking && (
             <button
               type="button"
               onClick={onRetry}
-              className="font-data text-[9px] uppercase tracking-[0.14em] text-coral"
+              className="text-[10.5px] text-coral"
             >
-              connection issue · retry
+              Connection issue · Retry
             </button>
           )}
         </div>
