@@ -135,3 +135,36 @@ Architecture notes for reviewers live in [docs/architecture.md](docs/architectur
 ## License
 
 MIT
+
+## 📱 Android App (3D Globe)
+
+A standalone mobile client lives in [`mobile/`](mobile/) — Vite + React +
+TypeScript + Capacitor + three.js. It features an interactive procedural 3D
+globe with animated flight arcs and glowing city markers, plus chat, a live
+budget bar, the itinerary view and a settings tab. It speaks the same SSE
+`/api/agent` contract as the web app.
+
+Run as web:
+
+```bash
+cd mobile
+npm install
+npm run dev
+```
+
+Build an Android APK (requires Android Studio):
+
+```bash
+cd mobile
+npm run build
+npx cap add android
+npx cap sync
+cd android && ./gradlew assembleDebug
+```
+
+The APK lands in `mobile/android/app/build/outputs/apk/debug/`.
+
+**API base URL** — the Next.js backend (`npm run dev` in the repo root) must be
+running. The app defaults to `http://10.0.2.2:3000` for the Android emulator
+(host loopback alias); on a real device use your PC's LAN IP instead. The base
+URL is editable at runtime in the Settings tab.
