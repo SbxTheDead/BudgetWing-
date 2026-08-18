@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import L from "leaflet";
 import {
   MapContainer,
@@ -116,15 +116,12 @@ function ResizeGuard() {
 /** A plane glyph flying the arc that is currently being searched. */
 function FlyingPlane({ arcKey, points }: { arcKey: string; points: LatLng[] }) {
   const map = useMap();
-  const pointsRef = useRef(points);
 
   useEffect(() => {
-    pointsRef.current = points;
-  }, [points]);
-
-  useEffect(() => {
-    const path = pointsRef.current;
-    if (path.length < 2) return;
+    // Nothing to animate (or a degenerate arc): bail out without a marker so
+    // the RAF loop never runs against an empty/short path.
+    if (!points || points.length < 2) return;
+    const path = points;
 
     const marker = L.marker(path[0], {
       interactive: false,
@@ -145,10 +142,13 @@ function FlyingPlane({ arcKey, points }: { arcKey: string; points: LatLng[] }) {
     const tick = (now: number) => {
       const t = ((now - start) % DURATION) / DURATION;
       const scaled = t * (path.length - 1);
-      const i = Math.min(path.length - 2, Math.floor(scaled));
+      const i = Math.max(0, Math.min(path.length - 2, Math.floor(scaled)));
       const f = scaled - i;
-      const [aLat, aLon] = path[i];
-      const [bLat, bLon] = path[i + 1];
+      const a = path[i];
+      const b = path[i + 1];
+      if (!a || !b) return;
+      const [aLat, aLon] = a;
+      const [bLat, bLon] = b;
 
       marker.setLatLng([aLat + (bLat - aLat) * f, aLon + (bLon - aLon) * f]);
 
@@ -166,7 +166,9 @@ function FlyingPlane({ arcKey, points }: { arcKey: string; points: LatLng[] }) {
       cancelAnimationFrame(frame);
       marker.remove();
     };
-  }, [map, arcKey]);
+    // Re-run whenever the path itself changes so the RAF never animates a
+    // stale (possibly shorter) copy of the arc.
+  }, [map, arcKey, points]);
 
   return null;
 }
